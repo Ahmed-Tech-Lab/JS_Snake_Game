@@ -1,0 +1,474 @@
+<html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background: linear-gradient(135deg, #1a1c2c, #5d275d);
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        
+        .game-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            aspect-ratio: 1/1;
+            margin: 0 auto;
+            background-color: #0f172a;
+            border: 4px solid #4ade80;
+            box-shadow: 0 0 20px rgba(74, 222, 128, 0.5);
+            overflow: hidden;
+        }
+        
+        #game-board {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .snake-part {
+            position: absolute;
+            background-color: #4ade80;
+            border-radius: 2px;
+            z-index: 2;
+        }
+        
+        .snake-head {
+            background-color: #22c55e;
+            border-radius: 4px;
+            z-index: 3;
+        }
+        
+        .food {
+            position: absolute;
+            background-color: #f87171;
+            border-radius: 50%;
+            z-index: 1;
+        }
+        
+        .game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            color: white;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .pixel-btn {
+            background-color: #4ade80;
+            color: #0f172a;
+            border: none;
+            padding: 12px 20px;
+            margin-top: 20px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 0 #22c55e;
+            position: relative;
+            top: 0;
+        }
+        
+        .pixel-btn:hover {
+            background-color: #22c55e;
+            box-shadow: 0 4px 0 #16a34a;
+        }
+        
+        .pixel-btn:active {
+            top: 4px;
+            box-shadow: 0 0 0 #16a34a;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            background-color: rgba(74, 222, 128, 0.2);
+            border: 2px solid #4ade80;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #4ade80;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .control-btn:active {
+            background-color: rgba(74, 222, 128, 0.4);
+        }
+        
+        @media (min-width: 768px) {
+            .controls {
+                display: none;
+            }
+        }
+        
+        .grid-cell {
+            position: absolute;
+            border: 1px solid rgba(74, 222, 128, 0.1);
+            box-sizing: border-box;
+        }
+        
+        .score-display {
+            text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5);
+        }
+        
+        .pulse {
+            animation: pulse-animation 1s infinite;
+        }
+        
+        @keyframes pulse-animation {
+            0% {
+                box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(74, 222, 128, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
+            }
+        }
+    </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.16 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.container{width:100%}@media (min-width: 640px){.container{max-width:640px}}@media (min-width: 768px){.container{max-width:768px}}@media (min-width: 1024px){.container{max-width:1024px}}@media (min-width: 1280px){.container{max-width:1280px}}@media (min-width: 1536px){.container{max-width:1536px}}.mx-auto{margin-left:auto;margin-right:auto}.mb-2{margin-bottom:0.5rem}.mb-4{margin-bottom:1rem}.mt-6{margin-top:1.5rem}.flex{display:flex}.hidden{display:none}.max-w-xl{max-width:36rem}.items-center{align-items:center}.justify-between{justify-content:space-between}.px-4{padding-left:1rem;padding-right:1rem}.py-8{padding-top:2rem;padding-bottom:2rem}.text-center{text-align:center}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-4xl{font-size:2.25rem;line-height:2.5rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-green-300{--tw-text-opacity:1;color:rgb(134 239 172 / var(--tw-text-opacity, 1))}.text-green-400{--tw-text-opacity:1;color:rgb(74 222 128 / var(--tw-text-opacity, 1))}.text-red-500{--tw-text-opacity:1;color:rgb(239 68 68 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}</style></head>
+<body class="text-white">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-center text-4xl mb-4 text-green-400 score-display">SNAKE GAME</h1>
+        
+        <div class="flex justify-between items-center max-w-xl mx-auto mb-4">
+            <div class="text-xl text-green-400 score-display">Score: <span id="score">0</span></div>
+            <div class="text-xl text-green-400 score-display">High Score: <span id="high-score">30</span></div>
+        </div>
+        
+        <div class="game-container">
+            <div id="game-board"><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 0px; top: 0px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 29.6px; top: 0px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 59.2px; top: 0px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 88.8px; top: 0px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 118.4px; top: 0px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 148px; top: 0px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 177.6px; top: 0px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 207.2px; top: 0px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 236.8px; top: 0px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 266.4px; top: 0px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 296px; top: 0px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 325.6px; top: 0px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 355.2px; top: 0px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 384.8px; top: 0px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 414.4px; top: 0px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 444px; top: 0px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 473.6px; top: 0px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 503.2px; top: 0px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 532.8px; top: 0px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 562.4px; top: 0px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 0px; top: 29.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 29.6px; top: 29.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 59.2px; top: 29.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 88.8px; top: 29.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 118.4px; top: 29.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 148px; top: 29.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 177.6px; top: 29.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 207.2px; top: 29.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 236.8px; top: 29.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 266.4px; top: 29.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 296px; top: 29.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 325.6px; top: 29.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 355.2px; top: 29.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 384.8px; top: 29.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 414.4px; top: 29.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 444px; top: 29.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 473.6px; top: 29.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 503.2px; top: 29.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 532.8px; top: 29.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 562.4px; top: 29.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 0px; top: 59.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 29.6px; top: 59.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 59.2px; top: 59.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 88.8px; top: 59.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 118.4px; top: 59.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 148px; top: 59.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 177.6px; top: 59.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 207.2px; top: 59.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 236.8px; top: 59.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 266.4px; top: 59.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 296px; top: 59.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 325.6px; top: 59.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 355.2px; top: 59.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 384.8px; top: 59.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 414.4px; top: 59.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 444px; top: 59.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 473.6px; top: 59.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 503.2px; top: 59.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 532.8px; top: 59.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 562.4px; top: 59.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 0px; top: 88.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 29.6px; top: 88.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 59.2px; top: 88.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 88.8px; top: 88.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 118.4px; top: 88.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 148px; top: 88.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 177.6px; top: 88.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 207.2px; top: 88.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 236.8px; top: 88.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 266.4px; top: 88.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 296px; top: 88.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 325.6px; top: 88.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 355.2px; top: 88.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 384.8px; top: 88.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 414.4px; top: 88.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 444px; top: 88.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 473.6px; top: 88.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 503.2px; top: 88.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 532.8px; top: 88.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 562.4px; top: 88.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 0px; top: 118.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 29.6px; top: 118.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 59.2px; top: 118.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 88.8px; top: 118.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 118.4px; top: 118.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 148px; top: 118.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 177.6px; top: 118.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 207.2px; top: 118.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 236.8px; top: 118.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 266.4px; top: 118.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 296px; top: 118.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 325.6px; top: 118.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 355.2px; top: 118.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 384.8px; top: 118.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 414.4px; top: 118.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 444px; top: 118.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 473.6px; top: 118.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 503.2px; top: 118.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 532.8px; top: 118.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 562.4px; top: 118.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 0px; top: 148px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 29.6px; top: 148px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 59.2px; top: 148px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 88.8px; top: 148px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 118.4px; top: 148px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 148px; top: 148px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 177.6px; top: 148px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 207.2px; top: 148px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 236.8px; top: 148px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 266.4px; top: 148px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 296px; top: 148px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 325.6px; top: 148px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 355.2px; top: 148px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 384.8px; top: 148px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 414.4px; top: 148px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 444px; top: 148px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 473.6px; top: 148px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 503.2px; top: 148px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 532.8px; top: 148px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 562.4px; top: 148px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 0px; top: 177.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 29.6px; top: 177.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 59.2px; top: 177.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 88.8px; top: 177.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 118.4px; top: 177.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 148px; top: 177.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 177.6px; top: 177.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 207.2px; top: 177.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 236.8px; top: 177.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 266.4px; top: 177.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 296px; top: 177.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 325.6px; top: 177.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 355.2px; top: 177.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 384.8px; top: 177.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 414.4px; top: 177.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 444px; top: 177.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 473.6px; top: 177.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 503.2px; top: 177.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 532.8px; top: 177.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 562.4px; top: 177.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 0px; top: 207.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 29.6px; top: 207.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 59.2px; top: 207.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 88.8px; top: 207.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 118.4px; top: 207.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 148px; top: 207.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 177.6px; top: 207.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 207.2px; top: 207.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 236.8px; top: 207.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 266.4px; top: 207.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 296px; top: 207.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 325.6px; top: 207.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 355.2px; top: 207.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 384.8px; top: 207.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 414.4px; top: 207.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 444px; top: 207.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 473.6px; top: 207.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 503.2px; top: 207.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 532.8px; top: 207.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 562.4px; top: 207.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 0px; top: 236.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 29.6px; top: 236.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 59.2px; top: 236.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 88.8px; top: 236.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 118.4px; top: 236.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 148px; top: 236.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 177.6px; top: 236.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 207.2px; top: 236.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 236.8px; top: 236.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 266.4px; top: 236.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 296px; top: 236.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 325.6px; top: 236.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 355.2px; top: 236.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 384.8px; top: 236.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 414.4px; top: 236.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 444px; top: 236.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 473.6px; top: 236.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 503.2px; top: 236.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 532.8px; top: 236.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 562.4px; top: 236.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 0px; top: 266.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 29.6px; top: 266.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 59.2px; top: 266.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 88.8px; top: 266.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 118.4px; top: 266.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 148px; top: 266.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 177.6px; top: 266.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 207.2px; top: 266.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 236.8px; top: 266.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 266.4px; top: 266.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 296px; top: 266.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 325.6px; top: 266.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 355.2px; top: 266.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 384.8px; top: 266.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 414.4px; top: 266.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 444px; top: 266.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 473.6px; top: 266.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 503.2px; top: 266.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 532.8px; top: 266.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 562.4px; top: 266.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 0px; top: 296px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 29.6px; top: 296px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 59.2px; top: 296px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 88.8px; top: 296px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 118.4px; top: 296px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 148px; top: 296px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 177.6px; top: 296px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 207.2px; top: 296px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 236.8px; top: 296px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 266.4px; top: 296px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 296px; top: 296px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 325.6px; top: 296px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 355.2px; top: 296px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 384.8px; top: 296px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 414.4px; top: 296px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 444px; top: 296px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 473.6px; top: 296px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 503.2px; top: 296px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 532.8px; top: 296px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 562.4px; top: 296px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 0px; top: 325.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 29.6px; top: 325.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 59.2px; top: 325.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 88.8px; top: 325.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 118.4px; top: 325.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 148px; top: 325.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 177.6px; top: 325.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 207.2px; top: 325.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 236.8px; top: 325.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 266.4px; top: 325.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 296px; top: 325.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 325.6px; top: 325.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 355.2px; top: 325.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 384.8px; top: 325.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 414.4px; top: 325.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 444px; top: 325.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 473.6px; top: 325.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 503.2px; top: 325.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 532.8px; top: 325.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 562.4px; top: 325.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 0px; top: 355.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 29.6px; top: 355.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 59.2px; top: 355.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 88.8px; top: 355.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 118.4px; top: 355.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 148px; top: 355.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 177.6px; top: 355.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 207.2px; top: 355.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 236.8px; top: 355.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 266.4px; top: 355.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 296px; top: 355.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 325.6px; top: 355.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 355.2px; top: 355.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 384.8px; top: 355.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 414.4px; top: 355.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 444px; top: 355.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 473.6px; top: 355.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 503.2px; top: 355.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 532.8px; top: 355.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 562.4px; top: 355.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 0px; top: 384.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 29.6px; top: 384.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 59.2px; top: 384.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 88.8px; top: 384.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 118.4px; top: 384.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 148px; top: 384.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 177.6px; top: 384.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 207.2px; top: 384.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 236.8px; top: 384.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 266.4px; top: 384.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 296px; top: 384.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 325.6px; top: 384.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 355.2px; top: 384.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 384.8px; top: 384.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 414.4px; top: 384.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 444px; top: 384.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 473.6px; top: 384.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 503.2px; top: 384.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 532.8px; top: 384.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 562.4px; top: 384.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 0px; top: 414.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 29.6px; top: 414.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 59.2px; top: 414.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 88.8px; top: 414.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 118.4px; top: 414.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 148px; top: 414.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 177.6px; top: 414.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 207.2px; top: 414.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 236.8px; top: 414.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 266.4px; top: 414.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 296px; top: 414.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 325.6px; top: 414.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 355.2px; top: 414.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 384.8px; top: 414.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 414.4px; top: 414.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 444px; top: 414.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 473.6px; top: 414.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 503.2px; top: 414.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 532.8px; top: 414.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 562.4px; top: 414.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 0px; top: 444px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 29.6px; top: 444px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 59.2px; top: 444px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 88.8px; top: 444px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 118.4px; top: 444px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 148px; top: 444px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 177.6px; top: 444px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 207.2px; top: 444px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 236.8px; top: 444px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 266.4px; top: 444px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 296px; top: 444px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 325.6px; top: 444px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 355.2px; top: 444px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 384.8px; top: 444px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 414.4px; top: 444px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 444px; top: 444px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 473.6px; top: 444px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 503.2px; top: 444px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 532.8px; top: 444px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 562.4px; top: 444px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 0px; top: 473.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 29.6px; top: 473.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 59.2px; top: 473.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 88.8px; top: 473.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 118.4px; top: 473.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 148px; top: 473.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 177.6px; top: 473.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 207.2px; top: 473.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 236.8px; top: 473.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 266.4px; top: 473.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 296px; top: 473.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 325.6px; top: 473.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 355.2px; top: 473.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 384.8px; top: 473.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 414.4px; top: 473.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 444px; top: 473.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 473.6px; top: 473.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 503.2px; top: 473.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 532.8px; top: 473.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 562.4px; top: 473.6px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 0px; top: 503.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 29.6px; top: 503.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 59.2px; top: 503.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 88.8px; top: 503.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 118.4px; top: 503.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 148px; top: 503.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 177.6px; top: 503.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 207.2px; top: 503.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 236.8px; top: 503.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 266.4px; top: 503.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 296px; top: 503.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 325.6px; top: 503.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 355.2px; top: 503.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 384.8px; top: 503.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 414.4px; top: 503.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 444px; top: 503.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 473.6px; top: 503.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 503.2px; top: 503.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 532.8px; top: 503.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 562.4px; top: 503.2px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 0px; top: 532.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 29.6px; top: 532.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 59.2px; top: 532.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 88.8px; top: 532.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 118.4px; top: 532.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 148px; top: 532.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 177.6px; top: 532.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 207.2px; top: 532.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 236.8px; top: 532.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 266.4px; top: 532.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 296px; top: 532.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 325.6px; top: 532.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 355.2px; top: 532.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 384.8px; top: 532.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 414.4px; top: 532.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 444px; top: 532.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 473.6px; top: 532.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 503.2px; top: 532.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 532.8px; top: 532.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 562.4px; top: 532.8px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 0px; top: 562.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 29.6px; top: 562.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 59.2px; top: 562.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 88.8px; top: 562.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 118.4px; top: 562.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 148px; top: 562.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 177.6px; top: 562.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 207.2px; top: 562.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 236.8px; top: 562.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 266.4px; top: 562.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 296px; top: 562.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 325.6px; top: 562.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 355.2px; top: 562.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 384.8px; top: 562.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 414.4px; top: 562.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 444px; top: 562.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 473.6px; top: 562.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 503.2px; top: 562.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 532.8px; top: 562.4px;"></div><div class="grid-cell" style="width: 29.6px; height: 29.6px; left: 562.4px; top: 562.4px;"></div><div class="snake-part snake-head" style="width: 29.6px; height: 29.6px; left: 562.4px; top: 296px;"></div><div class="food" style="width: 29.6px; height: 29.6px; left: 296px; top: 29.6px;"></div></div>
+            <div id="game-over" class="game-over">
+                <h2 class="text-3xl mb-4 text-red-500">GAME OVER</h2>
+                <p class="mb-2">Your Score: <span id="final-score">0</span></p>
+                <p class="mb-4">High Score: <span id="final-high-score">30</span></p>
+                <button id="restart-btn" class="pixel-btn">PLAY AGAIN</button>
+            </div>
+        </div>
+        
+        <div class="text-center mt-6 text-green-300">
+            <p class="mb-2">Use arrow keys or WASD to control the snake</p>
+            <button id="start-btn" class="pixel-btn pulse" style="opacity: 1;">START GAME</button>
+        </div>
+        
+        <div class="controls">
+            <div class="control-btn" id="up-btn">⬆️</div>
+            <div class="flex">
+                <div class="control-btn" id="left-btn">⬅️</div>
+                <div class="control-btn" id="down-btn">⬇️</div>
+                <div class="control-btn" id="right-btn">➡️</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Game settings
+            const GRID_SIZE = 20;
+            const GAME_SPEED = 150;
+            let gameBoard = document.getElementById('game-board');
+            let scoreElement = document.getElementById('score');
+            let highScoreElement = document.getElementById('high-score');
+            let finalScoreElement = document.getElementById('final-score');
+            let finalHighScoreElement = document.getElementById('final-high-score');
+            let gameOverScreen = document.getElementById('game-over');
+            let restartBtn = document.getElementById('restart-btn');
+            let startBtn = document.getElementById('start-btn');
+            
+            // Game state
+            let snake = [];
+            let food = { x: 0, y: 0 };
+            let direction = { x: 0, y: 0 };
+            let lastDirection = { x: 0, y: 0 };
+            let gameInterval;
+            let score = 0;
+            let highScore = localStorage.getItem('snakeHighScore') || 0;
+            let gameStarted = false;
+            let cellSize;
+            
+            // Initialize high score display
+            highScoreElement.textContent = highScore;
+            
+            // Create grid cells for visual effect
+            function createGrid() {
+                gameBoard.innerHTML = '';
+                cellSize = gameBoard.offsetWidth / GRID_SIZE;
+                
+                for (let y = 0; y < GRID_SIZE; y++) {
+                    for (let x = 0; x < GRID_SIZE; x++) {
+                        const cell = document.createElement('div');
+                        cell.classList.add('grid-cell');
+                        cell.style.width = `${cellSize}px`;
+                        cell.style.height = `${cellSize}px`;
+                        cell.style.left = `${x * cellSize}px`;
+                        cell.style.top = `${y * cellSize}px`;
+                        gameBoard.appendChild(cell);
+                    }
+                }
+            }
+            
+            // Initialize game
+            function initGame() {
+                createGrid();
+                snake = [
+                    { x: Math.floor(GRID_SIZE / 2), y: Math.floor(GRID_SIZE / 2) }
+                ];
+                direction = { x: 0, y: 0 };
+                lastDirection = { x: 0, y: 0 };
+                score = 0;
+                scoreElement.textContent = score;
+                generateFood();
+                drawGame();
+            }
+            
+            // Generate food at random position
+            function generateFood() {
+                let newFoodPosition;
+                do {
+                    newFoodPosition = {
+                        x: Math.floor(Math.random() * GRID_SIZE),
+                        y: Math.floor(Math.random() * GRID_SIZE)
+                    };
+                } while (snake.some(segment => segment.x === newFoodPosition.x && segment.y === newFoodPosition.y));
+                
+                food = newFoodPosition;
+            }
+            
+            // Draw the game elements
+            function drawGame() {
+                // Clear the board
+                const existingElements = document.querySelectorAll('.snake-part, .food');
+                existingElements.forEach(element => element.remove());
+                
+                // Draw snake
+                snake.forEach((segment, index) => {
+                    const snakeElement = document.createElement('div');
+                    snakeElement.classList.add('snake-part');
+                    if (index === 0) {
+                        snakeElement.classList.add('snake-head');
+                    }
+                    snakeElement.style.width = `${cellSize}px`;
+                    snakeElement.style.height = `${cellSize}px`;
+                    snakeElement.style.left = `${segment.x * cellSize}px`;
+                    snakeElement.style.top = `${segment.y * cellSize}px`;
+                    gameBoard.appendChild(snakeElement);
+                });
+                
+                // Draw food
+                const foodElement = document.createElement('div');
+                foodElement.classList.add('food');
+                foodElement.style.width = `${cellSize}px`;
+                foodElement.style.height = `${cellSize}px`;
+                foodElement.style.left = `${food.x * cellSize}px`;
+                foodElement.style.top = `${food.y * cellSize}px`;
+                gameBoard.appendChild(foodElement);
+            }
+            
+            // Update game state
+            function updateGame() {
+                // Save last direction
+                lastDirection = { ...direction };
+                
+                // Move snake
+                const newHead = { 
+                    x: snake[0].x + direction.x, 
+                    y: snake[0].y + direction.y 
+                };
+                
+                // Check for collisions
+                if (
+                    newHead.x < 0 || 
+                    newHead.x >= GRID_SIZE || 
+                    newHead.y < 0 || 
+                    newHead.y >= GRID_SIZE ||
+                    snake.some(segment => segment.x === newHead.x && segment.y === newHead.y)
+                ) {
+                    endGame();
+                    return;
+                }
+                
+                // Add new head
+                snake.unshift(newHead);
+                
+                // Check if food is eaten
+                if (newHead.x === food.x && newHead.y === food.y) {
+                    // Increase score
+                    score += 10;
+                    scoreElement.textContent = score;
+                    
+                    // Generate new food
+                    generateFood();
+                } else {
+                    // Remove tail if no food eaten
+                    snake.pop();
+                }
+                
+                // Draw updated game
+                drawGame();
+            }
+            
+            // Handle keyboard input
+            function handleKeyPress(e) {
+                if (!gameStarted) return;
+                
+                switch (e.key) {
+                    case 'ArrowUp':
+                    case 'w':
+                    case 'W':
+                        if (lastDirection.y !== 1) {
+                            direction = { x: 0, y: -1 };
+                        }
+                        break;
+                    case 'ArrowDown':
+                    case 's':
+                    case 'S':
+                        if (lastDirection.y !== -1) {
+                            direction = { x: 0, y: 1 };
+                        }
+                        break;
+                    case 'ArrowLeft':
+                    case 'a':
+                    case 'A':
+                        if (lastDirection.x !== 1) {
+                            direction = { x: -1, y: 0 };
+                        }
+                        break;
+                    case 'ArrowRight':
+                    case 'd':
+                    case 'D':
+                        if (lastDirection.x !== -1) {
+                            direction = { x: 1, y: 0 };
+                        }
+                        break;
+                }
+            }
+            
+            // Handle touch controls
+            function setupTouchControls() {
+                document.getElementById('up-btn').addEventListener('click', () => {
+                    if (lastDirection.y !== 1 && gameStarted) {
+                        direction = { x: 0, y: -1 };
+                    }
+                });
+                
+                document.getElementById('down-btn').addEventListener('click', () => {
+                    if (lastDirection.y !== -1 && gameStarted) {
+                        direction = { x: 0, y: 1 };
+                    }
+                });
+                
+                document.getElementById('left-btn').addEventListener('click', () => {
+                    if (lastDirection.x !== 1 && gameStarted) {
+                        direction = { x: -1, y: 0 };
+                    }
+                });
+                
+                document.getElementById('right-btn').addEventListener('click', () => {
+                    if (lastDirection.x !== -1 && gameStarted) {
+                        direction = { x: 1, y: 0 };
+                    }
+                });
+            }
+            
+            // Start the game
+            function startGame() {
+                if (gameStarted) return;
+                
+                gameStarted = true;
+                startBtn.classList.remove('pulse');
+                startBtn.textContent = 'GAME IN PROGRESS';
+                startBtn.disabled = true;
+                startBtn.style.opacity = '0.7';
+                
+                // Set initial direction
+                direction = { x: 1, y: 0 };
+                
+                // Start game loop
+                gameInterval = setInterval(updateGame, GAME_SPEED);
+            }
+            
+            // End the game
+            function endGame() {
+                clearInterval(gameInterval);
+                gameStarted = false;
+                
+                // Update high score
+                if (score > highScore) {
+                    highScore = score;
+                    localStorage.setItem('snakeHighScore', highScore);
+                    highScoreElement.textContent = highScore;
+                }
+                
+                // Show game over screen
+                finalScoreElement.textContent = score;
+                finalHighScoreElement.textContent = highScore;
+                gameOverScreen.classList.remove('hidden');
+                
+                // Reset start button
+                startBtn.textContent = 'START GAME';
+                startBtn.disabled = false;
+                startBtn.style.opacity = '1';
+                startBtn.classList.add('pulse');
+            }
+            
+            // Restart the game
+            function restartGame() {
+                gameOverScreen.classList.add('hidden');
+                initGame();
+                startGame();
+            }
+            
+            // Event listeners
+            document.addEventListener('keydown', handleKeyPress);
+            restartBtn.addEventListener('click', restartGame);
+            startBtn.addEventListener('click', () => {
+                if (!gameStarted) {
+                    startGame();
+                }
+            });
+            
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                if (gameBoard.offsetWidth > 0) {
+                    createGrid();
+                    cellSize = gameBoard.offsetWidth / GRID_SIZE;
+                    drawGame();
+                }
+            });
+            
+            // Initialize touch controls
+            setupTouchControls();
+            
+            // Initialize the game
+            initGame();
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93dbc860455ed0f5',t:'MTc0NjkwNDcwOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><iframe height="1" width="1" style="position: absolute; top: 0px; left: 0px; border: none; visibility: hidden;"></iframe>
+</body></html>
